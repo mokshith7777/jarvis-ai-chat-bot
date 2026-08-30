@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS Arc Reactor</title>
+  <style>
+    :root {
+      /* Primary: Neon Red Electric + Dark Black */
+      --primary-neon: oklch(0.65 0.25 25);
+      --primary-neon-glow: oklch(0.75 0.28 25 / 0.6);
+      --primary-deep: oklch(0.15 0.02 25);
+      --primary-dark: oklch(0.05 0 0);
+      
+      /* Secondary: Neon Blue Glowing */
+      --secondary-neon: oklch(0.6 0.22 240);
+      --secondary-neon-glow: oklch(0.7 0.25 240 / 0.5);
+      --secondary-deep: oklch(0.12 0.02 240);
+      
+      /* Nature accents */
+      --nature-emerald: oklch(0.55 0.18 150);
+      --nature-emerald-glow: oklch(0.65 0.2 150 / 0.4);
+      
+      /* Neutrals */
+      --bg: #030303;
+      --bg-elevated: oklch(0.08 0 0);
+      --fg: oklch(0.95 0 0);
+      --fg-muted: oklch(0.65 0 0);
+      --border: oklch(0.2 0 0 / 0.3);
+      
+      /* Glow intensities (reduced brightness) */
+      --glow-strong: 0 0 40px;
+      --glow-medium: 0 0 24px;
+      --glow-soft: 0 0 12px;
+      --glow-subtle: 0 0 6px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        --anim-duration: 0.01ms;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body { 
+      height: 100%; 
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Cinematic Video Background */
+    .video-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.1;
+    }
+    
+    .video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .video-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%),
+        linear-gradient(180deg, var(--bg) 0%, transparent 50%, var(--bg) 100%);
+      pointer-events: none;
+    }
+
+    /* Main Reactor Container */
+    .reactor-core {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    /* Triangular Arc Reactor */
+    .arc-reactor {
+      position: relative;
+      width: min(480px, 85vw);
+      aspect-ratio: 1;
+      filter: drop-shadow(0 0 60px var(--primary-neon-glow)) 
+              drop-shadow(0 0 120px var(--primary-deep));
+    }
+
+    /* Outer Triangular Ring */
+    .tri-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid transparent;
+      border-radius: 0;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: 
+        conic-gradient(from 0deg at 50% 50%, 
+          var(--primary-dark) 0deg,
+          var(--primary-neon) 60deg,
+          var(--primary-neon-glow) 120deg,
+          var(--primary-neon) 180deg,
+          var(--primary-dark) 240deg,
+          var(--secondary-neon) 300deg,
+          var(--primary-dark) 360deg
+        ) border-box;
+      -webkit-mask: 
+        linear-gradient(#fff 0 0) padding-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: ringRotate 20s linear infinite;
+      opacity: 0.85;
+    }
+
+    .tri-ring::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      background: var(--bg);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    }
+
+    /* Inner Triangular Core */
+    .tri-core {
+      position: absolute;
+      top: 12%;
+      left: 12%;
+      width: 76%;
+      height: 76%;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: 
+        radial-gradient(ellipse at 50% 40%, 
+          var(--primary-neon) 0%,
+          var(--primary-neon-glow) 25%,
+          var(--primary-deep) 60%,
+          var(--primary-dark) 100%
+        ),
+        radial-gradient(circle at 30% 30%, var(--secondary-neon-glow) 0%, transparent 40%),
+        radial-gradient(circle at 70% 60%, var(--nature-emerald-glow) 0%, transparent 35%);
+      animation: corePulse 3s ease-in-out infinite;
+      opacity: 0.75;
+    }
+
+    /* Central Reactor Chamber */
+    .chamber {
+      position: absolute;
+      top: 28%;
+      left: 28%;
+      width: 44%;
+      height: 44%;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: 
+        radial-gradient(ellipse at center, 
+          var(--primary-neon) 0%,
+          var(--primary-neon-glow) 20%,
+          var(--primary-deep) 55%,
+          var(--primary-dark) 85%
+        );
+      border: 1.5px solid var(--primary-neon);
+      box-shadow: 
+        inset 0 0 30px var(--primary-neon-glow),
+        inset 0 0 60px var(--primary-deep),
+        0 0 40px var(--primary-neon-glow),
+        0 0 80px var(--primary-deep);
+      animation: chamberBreath 4s ease-in-out infinite;
+    }
+
+    /* Energy Conduits - Three Arms */
+    .conduit {
+      position: absolute;
+      width: 6px;
+      background: linear-gradient(180deg, 
+        var(--primary-neon) 0%,
+        var(--primary-neon-glow) 30%,
+        var(--secondary-neon) 70%,
+        var(--secondary-neon-glow) 100%
+      );
+      box-shadow: 
+        0 0 8px var(--primary-neon-glow),
+        0 0 16px var(--secondary-neon-glow),
+        inset 0 0 4px var(--primary-neon);
+      border-radius: 3px;
+      transform-origin: bottom center;
+    }
+
+    .conduit-1 { top: 18%; left: 50%; height: 32%; transform: translateX(-50%) rotate(0deg); }
+    .conduit-2 { top: 18%; left: 50%; height: 32%; transform: translateX(-50%) rotate(120deg); transform-origin: bottom center; }
+    .conduit-3 { top: 18%; left: 50%; height: 32%; transform: translateX(-50%) rotate(240deg); transform-origin: bottom center; }
+
+    .conduit::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 14px;
+      height: 14px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, var(--primary-neon) 0%, var(--secondary-neon) 50%, transparent 70%);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--primary-neon-glow), 0 0 24px var(--secondary-neon-glow);
+      animation: conduitSpark 1.5s ease-in-out infinite;
+    }
+
+    .conduit-2::before { animation-delay: 0.5s; }
+    .conduit-3::before { animation-delay: 1s; }
+
+    /* Triangular Field Emitters */
+    .emitter {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--primary-neon);
+      border: 2px solid var(--secondary-neon);
+      box-shadow: 
+        0 0 12px var(--primary-neon-glow),
+        0 0 24px var(--secondary-neon-glow),
+        inset 0 0 6px var(--primary-neon);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      animation: emitterPulse 2s ease-in-out infinite;
+    }
+
+    .emitter-1 { top: 8%; left: 50%; transform: translateX(-50%) rotate(0deg); animation-delay: 0s; }
+    .emitter-2 { top: 50%; left: 88%; transform: translate(-50%, -50%) rotate(120deg); animation-delay: 0.66s; }
+    .emitter-3 { top: 50%; left: 12%; transform: translate(-50%, -50%) rotate(240deg); animation-delay: 1.33s; }
+
+    /* Particle Field */
+    .particle-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--primary-neon);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--primary-neon-glow), 0 0 12px var(--secondary-neon-glow);
+      opacity: 0;
+      animation: particleDrift 8s ease-in-out infinite;
+    }
+
+    /* Nature-inspired organic veins */
+    .vein-layer {
+      position: absolute;
+      inset: 10%;
+      pointer-events: none;
+    }
+
+    .vein {
+      position: absolute;
+      background: linear-gradient(90deg, 
+        transparent, 
+        var(--nature-emerald-glow), 
+        var(--secondary-neon-glow), 
+        transparent
+      );
+      height: 1px;
+      border-radius: 1px;
+      opacity: 0.4;
+      filter: blur(0.5px);
+      animation: veinFlow 6s ease-in-out infinite;
+    }
+
+    /* HUD Data Overlay */
+    .hud-overlay {
+      position: absolute;
+      bottom: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, 
+        var(--bg-elevated) 0%, 
+        var(--primary-dark) 50%, 
+        var(--secondary-deep) 100%
+      );
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 
+        0 0 30px var(--primary-neon-glow),
+        0 0 60px var(--secondary-neon-glow),
+        inset 0 1px 0 oklch(1 0 0 / 0.05);
+      backdrop-filter: blur(20px);
+    }
+
+    .hud-metric {
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .hud-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--fg-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .hud-value {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 1.25rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 20px var(--primary-neon-glow);
+    }
+
+    .hud-unit {
+      font-size: 0.6rem;
+      color: var(--fg-muted);
+      margin-left: 0.25rem;
+    }
+
+    /* Status Ring */
+    .status-ring {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 120px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+
+    .status-ring::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: conic-gradient(from var(--progress, 0deg), 
+        var(--primary-neon), var(--secondary-neon), var(--nature-emerald), var(--primary-neon)
+      ) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: statusProgress 10s linear infinite;
+    }
+
+    .status-text {
+      position: relative;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary-neon);
+      text-shadow: 0 0 10px var(--primary-neon-glow);
+    }
+
+    /* Animations */
+    @keyframes ringRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes corePulse {
+      0%, 100% { opacity: 0.7; transform: scale(1); filter: brightness(1); }
+      50% { opacity: 0.85; transform: scale(1.02); filter: brightness(1.15); }
+    }
+
+    @keyframes chamberBreath {
+      0%, 100% { 
+        box-shadow: 
+          inset 0 0 30px var(--primary-neon-glow),
+          inset 0 0 60px var(--primary-deep),
+          0 0 40px var(--primary-neon-glow),
+          0 0 80px var(--primary-deep);
+        border-color: var(--primary-neon);
+      }
+      50% { 
+        box-shadow: 
+          inset 0 0 40px var(--primary-neon-glow),
+          inset 0 0 80px var(--primary-deep),
+          0 0 60px var(--primary-neon-glow),
+          0 0 120px var(--primary-deep);
+        border-color: var(--secondary-neon);
+      }
+    }
+
+    @keyframes conduitSpark {
+      0%, 100% { 
+        transform: translateX(-50%) scale(1); 
+        opacity: 0.7;
+        box-shadow: 0 0 12px var(--primary-neon-glow), 0 0 24px var(--secondary-neon-glow);
+      }
+      50% { 
+        transform: translateX(-50%) scale(1.4); 
+        opacity: 1;
+        box-shadow: 0 0 20px var(--primary-neon-glow), 0 0 40px var(--secondary-neon-glow), 0 0 60px var(--nature-emerald-glow);
+      }
+    }
+
+    @keyframes emitterPulse {
+      0%, 100% { 
+        transform: translateX(-50%) rotate(0deg) scale(1);
+        box-shadow: 0 0 12px var(--primary-neon-glow), 0 0 24px var(--secondary-neon-glow);
+      }
+      50% { 
+        transform: translateX(-50%) rotate(0deg) scale(1.3);
+        box-shadow: 0 0 20px var(--primary-neon-glow), 0 0 40px var(--secondary-neon-glow), 0 0 60px var(--nature-emerald-glow);
+      }
+    }
+
+    .emitter-2 @keyframes emitterPulse {
+      50% { transform: translate(-50%, -50%) rotate(120deg) scale(1.3); }
+    }
+
+    .emitter-3 @keyframes emitterPulse {
+      50% { transform: translate(-50%, -50%) rotate(240deg) scale(1.3); }
+    }
+
+    @keyframes particleDrift {
+      0% { 
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(0);
+        opacity: 0;
+      }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.3; }
+      100% { 
+        transform: translate(calc(var(--tx, 0) * 3), calc(var(--ty, 0) * 3)) scale(1);
+        opacity: 0;
+      }
+    }
+
+    @keyframes veinFlow {
+      0%, 100% { opacity: 0.2; filter: blur(0.5px); }
+      50% { opacity: 0.5; filter: blur(1px); }
+    }
+
+    @keyframes statusProgress {
+      0% { --progress: 0deg; }
+      100% { --progress: 360deg; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .tri-ring, .tri-core, .chamber, .conduit::before, 
+      .emitter, .particle, .vein, .status-ring::before {
+        animation: none !important;
+      }
+      .tri-ring { opacity: 0.6; }
+      .tri-core { opacity: 0.6; }
+      .chamber { opacity: 0.7; }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .arc-reactor { width: 95vw; }
+      .hud-overlay { bottom: -70px; grid-template-columns: 1fr; gap: 0.5rem; }
+      .hud-value { font-size: 1rem; }
+      .status-ring { width: 90px; height: 90px; top: -50px; }
+    }
+
+    @media (max-height: 600px) {
+      .reactor-core { padding: 1rem; }
+      .arc-reactor { width: min(380px, 75vw); }
+      .hud-overlay { bottom: -60px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Cinematic Video Background -->
+  <div class="video-bg" id="videoBg">
+    <video 
+      id="bgVideo"
+      autoplay 
+      loop 
+      muted 
+      playsinline
+      preload="metadata"
+      poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%23030303'/%3E%3C/svg%3E"
+    >
+      <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-background-26751-large.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="reactor-core">
+    <div class="arc-reactor" id="arcReactor">
+      <!-- Outer Triangular Ring -->
+      <div class="tri-ring" id="triRing"></div>
+
+      <!-- Inner Triangular Core -->
+      <div class="tri-core" id="triCore"></div>
+
+      <!-- Central Chamber -->
+      <div class="chamber" id="chamber"></div>
+
+      <!-- Energy Conduits -->
+      <div class="conduit conduit-1"></div>
+      <div class="conduit conduit-2"></div>
+      <div class="conduit conduit-3"></div>
+
+      <!-- Field Emitters -->
+      <div class="emitter emitter-1"></div>
+      <div class="emitter emitter-2"></div>
+      <div class="emitter emitter-3"></div>
+
+      <!-- Particle Field -->
+      <div class="particle-field" id="particleField"></div>
+
+      <!-- Organic Vein Layer -->
+      <div class="vein-layer" id="veinLayer"></div>
+
+      <!-- Status Ring -->
+      <div class="status-ring">
+        <span class="status-text">ARC REACTOR MK-IV</span>
+      </div>
+
+      <!-- HUD Overlay -->
+      <div class="hud-overlay">
+        <div class="hud-metric">
+          <div class="hud-label">Core Temp</div>
+          <div class="hud-value" id="coreTemp">3.2<span class="hud-unit">MK</span></div>
+        </div>
+        <div class="hud-metric">
+          <div class="hud-label">Output</div>
+          <div class="hud-value" id="powerOutput">8.4<span class="hud-unit">GW</span></div>
+        </div>
+        <div class="hud-metric">
+          <div class="hud-label">Stability</div>
+          <div class="hud-value" id="stability">99.7<span class="hud-unit">%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize particles
+    const particleField = document.getElementById('particleField');
+    const particleCount = 35;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      
+      // Random position within triangle bounds
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 0.3 + Math.random() * 0.35;
+      const tx = (Math.random() - 0.5) * 200;
+      const ty = (Math.random() - 0.5) * 200;
+      
+      particle.style.left = `${50 + Math.cos(angle) * radius * 50}%`;
+      particle.style.top = `${50 + Math.sin(angle) * radius * 50}%`;
+      particle.style.setProperty('--tx', `${tx}px`);
+      particle.style.setProperty('--ty', `${ty}px`);
+      particle.style.animationDelay = `${Math.random() * 8}s`;
+      particle.style.animationDuration = `${6 + Math.random() * 6}s`;
+      
+      // Random color variation
+      const hue = Math.random() > 0.6 ? '150' : (Math.random() > 0.3 ? '25' : '240');
+      particle.style.background = `oklch(0.7 0.25 ${hue})`;
+      particle.style.boxShadow = `0 0 6px oklch(0.8 0.3 ${hue} / 0.6), 0 0 12px oklch(0.7 0.25 ${hue} / 0.4)`;
+      
+      particleField.appendChild(particle);
+    }
+
+    // Initialize organic veins
+    const veinLayer = document.getElementById('veinLayer');
+    const veinCount = 12;
+    
+    for (let i = 0; i < veinCount; i++) {
+      const vein = document.createElement('div');
+      vein.className = 'vein';
+      
+      const angle = (i / veinCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+      const length = 40 + Math.random() * 60;
+      const distance = 15 + Math.random() * 30;
+      
+      vein.style.left = `${50 + Math.cos(angle) * distance}%`;
+      vein.style.top = `${50 + Math.sin(angle) * distance}%`;
+      vein.style.width = `${length}px`;
+      vein.style.transform = `rotate(${angle}rad)`;
+      vein.style.transformOrigin = '0 0';
+      vein.style.animationDelay = `${Math.random() * 6}s`;
+      vein.style.animationDuration = `${5 + Math.random() * 4}s`;
+      vein.style.opacity = 0.2 + Math.random() * 0.3;
+      
+      veinLayer.appendChild(vein);
+    }
+
+    // Dynamic HUD values
+    function updateHUD() {
+      const temp = (3.1 + Math.random() * 0.4).toFixed(1);
+      const power = (8.0 + Math.random() * 1.2).toFixed(1);
+      const stability = (99.2 + Math.random() * 0.7).toFixed(1);
+      
+      document.getElementById('coreTemp').firstChild.textContent = temp;
+      document.getElementById('powerOutput').firstChild.textContent = power;
+      document.getElementById('stability').firstChild.textContent = stability;
+    }
+
+    setInterval(updateHUD, 2000);
+    updateHUD();
+
+    // Video background handling with fallback
+    const videoBg = document.getElementById('videoBg');
+    const bgVideo = document.getElementById('bgVideo');
+    
+    bgVideo.addEventListener('error', () => {
+      videoBg.style.display = 'none';
+      // Add subtle animated gradient fallback
+      document.body.style.background = `
+        radial-gradient(ellipse at 30% 20%, oklch(0.15 0.05 25) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, oklch(0.1 0.04 240) 0%, transparent 50%),
+        var(--bg)
+      `;
+    });
+
+    bgVideo.addEventListener('loadeddata', () => {
+      bgVideo.play().catch(() => {
+        videoBg.style.display = 'none';
+      });
+    });
+
+    // Mouse parallax on reactor
+    document.addEventListener('mousemove', (e) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      
+      const reactor = document.getElementById('arcReactor');
+      const rect = reactor.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = (e.clientX - centerX) / rect.width * 15;
+      const deltaY = (e.clientY - centerY) / rect.height * 15;
+      
+      reactor.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    });
+
+    document.addEventListener('mouseleave', () => {
+      const reactor = document.getElementById('arcReactor');
+      reactor.style.transform = 'translate(0, 0)';
+    });
+
+    // Touch support for mobile
+    document.addEventListener('touchmove', (e) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const touch = e.touches[0];
+      const reactor = document.getElementById('arcReactor');
+      const rect = reactor.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = (touch.clientX - centerX) / rect.width * 10;
+      const deltaY = (touch.clientY - centerY) / rect.height * 10;
+      reactor.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    }, { passive: true });
+  </script>
+</body>
+</html>

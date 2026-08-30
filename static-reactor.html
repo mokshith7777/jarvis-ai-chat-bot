@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JARVIS AI – 3‑D Reactor Demo</title>
+  <style>
+    body,html{margin:0;height:100%;overflow:hidden;background:#000;}
+    #reactor{width:100%;height:100%;display:block;}
+  </style>
+</head>
+<body>
+<canvas id="reactor"></canvas>
+<script>
+  // Load the exact reactor script from your GitHub repo
+  const script = document.createElement('script');
+  script.src = 'https://raw.githubusercontent.com/mokshith7777/jarvis-ai-portfolio/main/main.js';
+  script.onload = () => {
+    // The script expects a canvas with id "webgl-canvas"; rename ours:
+    const canvas = document.getElementById('reactor');
+    canvas.id = 'webgl-canvas';
+    // Trigger the reactor (the script auto‑starts on load when it finds the canvas)
+  };
+  document.head.appendChild(script);
+</script>
+</body>
+</html>

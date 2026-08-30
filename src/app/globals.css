@@ -1,0 +1,188 @@
+:root {
+  /* Existing JARVIS palette */
+  --neon: #f03;
+  --midnight: #0b1421;
+  --charcoal: #1a1d24;
+  --bg: var(--midnight);
+  --surface: var(--charcoal);
+  --surface-2: #161b26;
+  --text: #eaf6f8;
+  --muted: #8aa0b0;
+  --gold: #e8c54a;
+  --gold-deep: #d4af37;
+  --gold-soft: rgba(232, 197, 74, 0.12);
+  --cyan: #1ec8e6;
+  --cyan-deep: #0a3a4a;
+  --cyan-glow: rgba(30, 200, 230, 0.18);
+  --neon-soft: rgba(255, 0, 51, 0.14);
+  --border: rgba(255, 0, 51, 0.22);
+  --primary: var(--neon);
+  --primary-grad: linear-gradient(135deg, #f03, #1ec8e6);
+  --primary-grad-warm: linear-gradient(135deg, #f03, #e8c54a);
+
+  /* Triangular Arc Reactor — Red primary, Blue secondary, Nature emerald */
+  /* Reduced brightness: glow opacities at 0.35-0.5, core at 0.7 */
+  --tri-red: oklch(0.58 0.22 25);
+  --tri-red-deep: oklch(0.13 0.02 25);
+  --tri-red-dark: oklch(0.05 0 0);
+  --tri-red-glow: oklch(0.68 0.25 25 / 0.45);
+  --tri-blue: oklch(0.52 0.19 240);
+  --tri-blue-deep: oklch(0.1 0.015 240);
+  --tri-blue-glow: oklch(0.62 0.22 240 / 0.4);
+  --tri-emerald: oklch(0.48 0.16 150);
+  --tri-emerald-glow: oklch(0.58 0.18 150 / 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body, html {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
+}
+
+body {
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+#__next, .app-shell, main {
+  position: relative;
+  z-index: 1;
+  position: fixed;
+  inset: 0;
+  pointer-events: all;
+}
+
+/* Ensure app content is visible above 3D background */
+.app-shell > * {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+/* Make sure chat interface elements are properly layered */
+.MessageList, .InputBar, .ActionButtons, .ModelInfo, .QuotaBar, .ErrorBanner, Header {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--neon), var(--cyan));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon);
+}
+
+button {
+  cursor: pointer;
+  background: none;
+}
+
+button, input, select, textarea {
+  border: none;
+  font-family: inherit;
+}
+
+input, select, textarea {
+  outline: none;
+}
+
+@keyframes jarvis-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.jarvis-msg {
+  animation: jarvis-fade-in 0.28s ease-out;
+}
+
+@keyframes jarvis-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes jarvis-blink {
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
+
+@media (max-width: 600px) {
+  .jarvis-chat-bubble {
+    max-width: 88% !important;
+  }
+}
+
+/* Cinematic video background */
+.cinematic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cinematic-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.12;
+  filter: saturate(0.6) contrast(1.1);
+}
+
+.cinematic-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(4, 4, 6, 0.85) 100%);
+  pointer-events: none;
+}
+
+.app-shell {
+  background: transparent !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-bg video {
+    animation: none;
+    opacity: 0.03;
+  }
+}
